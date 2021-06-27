@@ -1,0 +1,430 @@
+{
+    "wall_time": 791.1545891610003,
+    "image_reports": [
+        {
+            "image": "DSC_0430.JPG",
+            "num_features": 4908,
+            "wall_time": 10.186105171998861
+        },
+        {
+            "image": "DSC_0485.JPG",
+            "num_features": 4833,
+            "wall_time": 9.789181726000606
+        },
+        {
+            "image": "DSC_0484.JPG",
+            "num_features": 4855,
+            "wall_time": 9.459317680000822
+        },
+        {
+            "image": "DSC_0425.JPG",
+            "num_features": 4898,
+            "wall_time": 9.187280394000481
+        },
+        {
+            "image": "DSC_0437.JPG",
+            "num_features": 4885,
+            "wall_time": 11.615649981000388
+        },
+        {
+            "image": "DSC_0454.JPG",
+            "num_features": 4943,
+            "wall_time": 12.15028651099965
+        },
+        {
+            "image": "DSC_0493.JPG",
+            "num_features": 4823,
+            "wall_time": 8.191794041000321
+        },
+        {
+            "image": "DSC_0491.JPG",
+            "num_features": 4860,
+            "wall_time": 8.174960799000473
+        },
+        {
+            "image": "DSC_0422.JPG",
+            "num_features": 4998,
+            "wall_time": 8.195655154000633
+        },
+        {
+            "image": "DSC_0420.JPG",
+            "num_features": 4997,
+            "wall_time": 9.649046168000496
+        },
+        {
+            "image": "DSC_0434.JPG",
+            "num_features": 4889,
+            "wall_time": 10.134053667999979
+        },
+        {
+            "image": "DSC_0427.JPG",
+            "num_features": 4921,
+            "wall_time": 8.282534639000005
+        },
+        {
+            "image": "DSC_0478.JPG",
+            "num_features": 4801,
+            "wall_time": 8.16085407600076
+        },
+        {
+            "image": "DSC_0453.JPG",
+            "num_features": 4937,
+            "wall_time": 8.139521192999382
+        },
+        {
+            "image": "DSC_0492.JPG",
+            "num_features": 4821,
+            "wall_time": 8.259792646000278
+        },
+        {
+            "image": "DSC_0436.JPG",
+            "num_features": 4947,
+            "wall_time": 8.184718250000515
+        },
+        {
+            "image": "DSC_0462.JPG",
+            "num_features": 4918,
+            "wall_time": 8.362804289999985
+        },
+        {
+            "image": "DSC_0450.JPG",
+            "num_features": 4935,
+            "wall_time": 8.18603163700027
+        },
+        {
+            "image": "DSC_0481.JPG",
+            "num_features": 4828,
+            "wall_time": 8.273833490999095
+        },
+        {
+            "image": "DSC_0444.JPG",
+            "num_features": 4888,
+            "wall_time": 8.091590859999997
+        },
+        {
+            "image": "DSC_0479.JPG",
+            "num_features": 4824,
+            "wall_time": 8.15791343300043
+        },
+        {
+            "image": "DSC_0469.JPG",
+            "num_features": 5042,
+            "wall_time": 8.20880882900019
+        },
+        {
+            "image": "DSC_0440.JPG",
+            "num_features": 4878,
+            "wall_time": 8.135407231999125
+        },
+        {
+            "image": "DSC_0463.JPG",
+            "num_features": 4912,
+            "wall_time": 8.222202065999227
+        },
+        {
+            "image": "DSC_0468.JPG",
+            "num_features": 4997,
+            "wall_time": 8.171864865998941
+        },
+        {
+            "image": "DSC_0431.JPG",
+            "num_features": 4927,
+            "wall_time": 8.172059280999747
+        },
+        {
+            "image": "DSC_0458.JPG",
+            "num_features": 4922,
+            "wall_time": 8.232645517000492
+        },
+        {
+            "image": "DSC_0472.JPG",
+            "num_features": 5088,
+            "wall_time": 8.43344986000011
+        },
+        {
+            "image": "DSC_0455.JPG",
+            "num_features": 4931,
+            "wall_time": 8.286094614999456
+        },
+        {
+            "image": "DSC_0477.JPG",
+            "num_features": 4776,
+            "wall_time": 8.558020026999657
+        },
+        {
+            "image": "DSC_0428.JPG",
+            "num_features": 4891,
+            "wall_time": 8.41408768600013
+        },
+        {
+            "image": "DSC_0486.JPG",
+            "num_features": 4864,
+            "wall_time": 8.178087554999365
+        },
+        {
+            "image": "DSC_0447.JPG",
+            "num_features": 4902,
+            "wall_time": 8.172756687999936
+        },
+        {
+            "image": "DSC_0445.JPG",
+            "num_features": 4874,
+            "wall_time": 8.140166279999903
+        },
+        {
+            "image": "DSC_0460.JPG",
+            "num_features": 4926,
+            "wall_time": 8.166440666000199
+        },
+        {
+            "image": "DSC_0474.JPG",
+            "num_features": 5023,
+            "wall_time": 8.272627004000242
+        },
+        {
+            "image": "DSC_0476.JPG",
+            "num_features": 4834,
+            "wall_time": 8.14584489399931
+        },
+        {
+            "image": "DSC_0471.JPG",
+            "num_features": 5116,
+            "wall_time": 8.30571137699917
+        },
+        {
+            "image": "DSC_0435.JPG",
+            "num_features": 4912,
+            "wall_time": 8.39789030800057
+        },
+        {
+            "image": "DSC_0490.JPG",
+            "num_features": 4819,
+            "wall_time": 8.282070442000986
+        },
+        {
+            "image": "DSC_0483.JPG",
+            "num_features": 4841,
+            "wall_time": 8.221166367000478
+        },
+        {
+            "image": "DSC_0482.JPG",
+            "num_features": 4824,
+            "wall_time": 8.180954923000172
+        },
+        {
+            "image": "DSC_0438.JPG",
+            "num_features": 4865,
+            "wall_time": 8.10653480899964
+        },
+        {
+            "image": "DSC_0446.JPG",
+            "num_features": 4912,
+            "wall_time": 8.17848174000028
+        },
+        {
+            "image": "DSC_0487.JPG",
+            "num_features": 4876,
+            "wall_time": 8.302727009000591
+        },
+        {
+            "image": "DSC_0473.JPG",
+            "num_features": 5053,
+            "wall_time": 8.229819913000028
+        },
+        {
+            "image": "DSC_0448.JPG",
+            "num_features": 4907,
+            "wall_time": 8.199935753000318
+        },
+        {
+            "image": "DSC_0495.JPG",
+            "num_features": 4789,
+            "wall_time": 8.131022702000337
+        },
+        {
+            "image": "DSC_0442.JPG",
+            "num_features": 4866,
+            "wall_time": 8.147872440998981
+        },
+        {
+            "image": "DSC_0441.JPG",
+            "num_features": 4890,
+            "wall_time": 8.116440189000059
+        },
+        {
+            "image": "DSC_0452.JPG",
+            "num_features": 4937,
+            "wall_time": 8.197763055000905
+        },
+        {
+            "image": "DSC_0449.JPG",
+            "num_features": 4931,
+            "wall_time": 8.25620536400129
+        },
+        {
+            "image": "DSC_0496.JPG",
+            "num_features": 4781,
+            "wall_time": 8.169468456000686
+        },
+        {
+            "image": "DSC_0419.JPG",
+            "num_features": 4999,
+            "wall_time": 8.623521294000966
+        },
+        {
+            "image": "DSC_0426.JPG",
+            "num_features": 4944,
+            "wall_time": 8.44186595499923
+        },
+        {
+            "image": "DSC_0443.JPG",
+            "num_features": 4881,
+            "wall_time": 8.211837033999473
+        },
+        {
+            "image": "DSC_0502.JPG",
+            "num_features": 4850,
+            "wall_time": 10.114793392998763
+        },
+        {
+            "image": "DSC_0500.JPG",
+            "num_features": 4695,
+            "wall_time": 10.175063137001416
+        },
+        {
+            "image": "DSC_0501.JPG",
+            "num_features": 4892,
+            "wall_time": 10.0640439660001
+        },
+        {
+            "image": "DSC_0475.JPG",
+            "num_features": 4896,
+            "wall_time": 8.367331180999827
+        },
+        {
+            "image": "DSC_0423.JPG",
+            "num_features": 4934,
+            "wall_time": 8.154377119000856
+        },
+        {
+            "image": "DSC_0461.JPG",
+            "num_features": 4909,
+            "wall_time": 8.19488520699997
+        },
+        {
+            "image": "DSC_0429.JPG",
+            "num_features": 4927,
+            "wall_time": 8.177224817000024
+        },
+        {
+            "image": "DSC_0457.JPG",
+            "num_features": 5003,
+            "wall_time": 8.467985347999274
+        },
+        {
+            "image": "DSC_0499.JPG",
+            "num_features": 4734,
+            "wall_time": 8.12361353400047
+        },
+        {
+            "image": "DSC_0424.JPG",
+            "num_features": 4961,
+            "wall_time": 8.299193037000805
+        },
+        {
+            "image": "DSC_0497.JPG",
+            "num_features": 4764,
+            "wall_time": 8.163877998998942
+        },
+        {
+            "image": "DSC_0439.JPG",
+            "num_features": 4880,
+            "wall_time": 8.562765184000455
+        },
+        {
+            "image": "DSC_0465.JPG",
+            "num_features": 4887,
+            "wall_time": 10.582805017000283
+        },
+        {
+            "image": "DSC_0464.JPG",
+            "num_features": 4917,
+            "wall_time": 9.100616562000141
+        },
+        {
+            "image": "DSC_0421.JPG",
+            "num_features": 4963,
+            "wall_time": 9.446309187000224
+        },
+        {
+            "image": "DSC_0494.JPG",
+            "num_features": 4820,
+            "wall_time": 10.142017501999362
+        },
+        {
+            "image": "DSC_0498.JPG",
+            "num_features": 4812,
+            "wall_time": 8.889847402000669
+        },
+        {
+            "image": "DSC_0466.JPG",
+            "num_features": 4869,
+            "wall_time": 8.107552401999783
+        },
+        {
+            "image": "DSC_0432.JPG",
+            "num_features": 4879,
+            "wall_time": 8.153135270000348
+        },
+        {
+            "image": "DSC_0489.JPG",
+            "num_features": 4823,
+            "wall_time": 13.058391327998834
+        },
+        {
+            "image": "DSC_0459.JPG",
+            "num_features": 4908,
+            "wall_time": 20.33444687299925
+        },
+        {
+            "image": "DSC_0480.JPG",
+            "num_features": 4745,
+            "wall_time": 9.048145516999284
+        },
+        {
+            "image": "DSC_0451.JPG",
+            "num_features": 4895,
+            "wall_time": 9.90395984800125
+        },
+        {
+            "image": "DSC_0470.JPG",
+            "num_features": 5065,
+            "wall_time": 10.568318170000566
+        },
+        {
+            "image": "DSC_0467.JPG",
+            "num_features": 5014,
+            "wall_time": 10.347684129999834
+        },
+        {
+            "image": "DSC_0503.JPG",
+            "num_features": 4972,
+            "wall_time": 11.168321901999661
+        },
+        {
+            "image": "DSC_0433.JPG",
+            "num_features": 4906,
+            "wall_time": 11.252355321001232
+        },
+        {
+            "image": "DSC_0456.JPG",
+            "num_features": 4927,
+            "wall_time": 10.712405064999984
+        },
+        {
+            "image": "DSC_0488.JPG",
+            "num_features": 4846,
+            "wall_time": 9.806865010001275
+        }
+    ]
+}
