@@ -3,11 +3,15 @@ import random
 import numpy as np
 import open3d as o3d
 from tkinter import *
+from tkinter.tix import *
 from PIL import *
 from tkinter import ttk
+from tkinter import messagebox
 from PIL import ImageTk,Image
 from tkinter import filedialog
 from ttkwidgets import CheckboxTreeview
+from WFS.Camera import cameraApp
+# from CreateMesh import createMesh
 
 
 root = Tk()
@@ -25,12 +29,11 @@ def loadImage():
     # imageOpenNew = imageOpen1.resize((800,662), Image.ANTIALIAS)
     # imageOpen1 = ImageTk.PhotoImage(imageOpenNew)
     # imageLabel1 = Label(displayFrame, image=imageOpen1)
-    # imageLabel1.pack(fill=None, expand=False)
-    
-        
+    # imageLabel1.pack(fill=None, expand=False)     
 
 # Gallary Button -- To load multiple image file
 def loadMultipleImage():
+    global cnv
     images = []
     path = filedialog.askdirectory()
     for dirname,dirnames, filenames in os.walk(path):
@@ -82,16 +85,36 @@ def saveImage():
 
 # Refresh Button -- to Refresh file
 def refresh():
-    root.update_idletasks()
+    directory = ''
+    
+    
+    
 
+# Camera Buttuon -- to load camera frame to capture pictures
+def loadCamera():
+    top = Toplevel()
+    cameraApp(top,"Camera")
+
+def createMesh():
+    dataname = filedialog.askopenfilename(initialdir="C:/Users/Sandeep Saurav/Desktop/", title="Select a file", filetype=(("3D Object","*.ply"),("All Files","*.*")))
+    response = messagebox.askyesno("Generate Mesh", "Do you want to continue?")
+    if int(response) == 1 :
+        pcd = o3d.io.read_point_cloud(dataname)
+        mesh = pcd.get_knot_mesh()
+        o3d.visualization.draw_geometries([mesh])
+    else: return
 
 def loadPointCloud():
+    global pointCloud
     filename1 = filedialog.askopenfilename(initialdir="C:/Users/Sandeep Saurav/Desktop/", title="Select a file", filetype=(("3D Object","*.ply"),("All Files","*.*")))
     cloud = o3d.io.read_point_cloud(filename1) # Read the point cloud
     pointCloud = o3d.visualization.draw_geometries([cloud])   
     pointCloudNew = pointCloud.getresize((800,662), Image.ANTIALIAS)
     pointCloudLabel = Label(displayFrame, image=pointCloudNew)
     pointCloudLabel.pack(fill=None, expand=False)
+
+def openPotree():
+    pass
 
 def donothing():
    filewin = Toplevel(root)
@@ -164,6 +187,7 @@ cameraImg = ImageTk.PhotoImage(Image.open("image1/camera.png"))
 droneImg = ImageTk.PhotoImage(Image.open("image1/drone.png"))
 meshImg = ImageTk.PhotoImage(Image.open("image1/cube.png"))
 pointImg = ImageTk.PhotoImage(Image.open("image1/point.png"))
+viewImg = ImageTk.PhotoImage(Image.open("image1/visual.png"))
 
 # widgets in widegtframe
 
@@ -177,21 +201,44 @@ reloadImg_btn = Button(widgetFrame, image=reloadImg, command=refresh)
 reloadImg_btn.pack(side='left')
 saveImg_btn = Button(widgetFrame, image=saveImg, command=saveImage)
 saveImg_btn.pack(side='left')
-zoominImg_btn = Button(widgetFrame, image=zoominImg, command=saveImage)
-zoominImg_btn.pack(side='left')
-zoomoutImg_btn = Button(widgetFrame, image=zoomoutImg, command=saveImage)
-zoomoutImg_btn.pack(side='left')
-scrollImg_btn = Button(widgetFrame, image=scrollImg, command=saveImage)
-scrollImg_btn.pack(side='left')
-cameraImg_btn = Button(widgetFrame, image=cameraImg)
+# zoominImg_btn = Button(widgetFrame, image=zoominImg, command=saveImage)
+# zoominImg_btn.pack(side='left')
+# zoomoutImg_btn = Button(widgetFrame, image=zoomoutImg, command=saveImage)
+# zoomoutImg_btn.pack(side='left')
+# scrollImg_btn = Button(widgetFrame, image=scrollImg, command=saveImage)
+# scrollImg_btn.pack(side='left')
+cameraImg_btn = Button(widgetFrame, image=cameraImg, command=loadCamera)
 cameraImg_btn.pack(side='left')
 droneImg_btn = Button(widgetFrame, image=droneImg)
 droneImg_btn.pack(side='left')
-meshImg_btn = Button(widgetFrame, image=meshImg, command = loadPointCloud)
+meshImg_btn = Button(widgetFrame, image=meshImg, command=createMesh)
 meshImg_btn.pack(side='left')
-pointImg_btn = Button(widgetFrame, image=pointImg)
+pointImg_btn = Button(widgetFrame, image=pointImg, command=loadPointCloud)
 pointImg_btn.pack(side='left')
+viewImg_btn = Button(widgetFrame, image=viewImg, command=openPotree)
+viewImg_btn.pack(side='left')
 
+## Creating Tool Tip for 
+
+tip = Balloon(root)
+#tip.config(bg="white", ) # change boundary color
+#tip.label.config(bg="white", fg="green") #  change arrow color
+tip.message.config(bg="white",fg="black") # change messgae color
+for sub in tip.subwidgets_all():
+    sub.configure(bg="white") # to make yellow bg = white
+tip.subwidget('label').forget() # to remove arrow
+
+# Binding Tool Tip to Buttons
+tip.bind_widget(singleImg_btn, balloonmsg="Open Image")
+tip.bind_widget(multiImg_btn , balloonmsg="Open Multiple Image")
+tip.bind_widget(folderImg_btn, balloonmsg="Open Folder")
+tip.bind_widget(reloadImg_btn, balloonmsg="Refresh")
+tip.bind_widget(saveImg_btn, balloonmsg="Save As")
+tip.bind_widget(cameraImg_btn, balloonmsg="Open Camera")
+tip.bind_widget(droneImg_btn, balloonmsg="Open Drone Imagery")
+tip.bind_widget(meshImg_btn, balloonmsg="Create Mesh")
+tip.bind_widget(pointImg_btn, balloonmsg="Create Point Cloud")
+tip.bind_widget(viewImg_btn, balloonmsg="Open Potree Visualization")
 
 # Contents for treeFrame
 class treeViewContent(object):
@@ -204,7 +251,7 @@ class treeViewContent(object):
         self.tree.heading("#0", text='Directory', anchor='w')
         ysb.pack(side=RIGHT, fill=Y )
         xsb.pack(side=BOTTOM, fill=X, anchor='sw')
-        self.tree.pack(side=LEFT, fill="both", expand=1)
+        self.tree.pack(side=LEFT, anchor="center")
         
         # ysb.grid(row=0, column=1, sticky='ns')
         # xsb.grid(row=1, column=0, sticky='ew')
@@ -258,7 +305,7 @@ class Zoom_Advanced(ttk.Frame):
         hbar.grid(row=1, column=0, sticky='we')
         # Create canvas and put image on it
         self.canvas = Canvas(self.master, highlightthickness=0,
-                                xscrollcommand=hbar.set, yscrollcommand=vbar.set, width=800, height=662)
+                                xscrollcommand=hbar.set, yscrollcommand=vbar.set, width=800, height=662, bg="#FFFFFF")
         self.canvas.grid(row=0, column=0, sticky='nswe')
         self.canvas.update()  # wait till canvas is created
         vbar.configure(command=self.scroll_y)  # bind scrollbars to the canvas
