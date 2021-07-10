@@ -1,2 +1,0 @@
-/usr/bin/ar qc libgeometry.a  CMakeFiles/geometry.dir/src/camera.cc.o CMakeFiles/geometry.dir/src/essential.cc.o CMakeFiles/geometry.dir/src/covariance.cc.o CMakeFiles/geometry.dir/src/triangulation.cc.o CMakeFiles/geometry.dir/src/absolute_pose.cc.o CMakeFiles/geometry.dir/src/relative_pose.cc.o
-/usr/bin/ranlib libgeometry.a
