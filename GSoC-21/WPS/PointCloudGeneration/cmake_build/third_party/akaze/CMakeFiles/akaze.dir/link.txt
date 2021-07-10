@@ -1,0 +1,2 @@
+/usr/bin/ar qc libakaze.a  CMakeFiles/akaze.dir/lib/AKAZE.cpp.o CMakeFiles/akaze.dir/lib/fed.cpp.o CMakeFiles/akaze.dir/lib/nldiffusion_functions.cpp.o CMakeFiles/akaze.dir/lib/utils.cpp.o
+/usr/bin/ranlib libakaze.a

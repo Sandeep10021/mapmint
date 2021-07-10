@@ -1,0 +1,2 @@
+/usr/bin/ar qc libmap.a  CMakeFiles/map.dir/src/landmark.cc.o CMakeFiles/map.dir/src/map.cc.o CMakeFiles/map.dir/src/rig.cc.o CMakeFiles/map.dir/src/shot.cc.o CMakeFiles/map.dir/src/dataviews.cc.o CMakeFiles/map.dir/src/observation.cc.o CMakeFiles/map.dir/src/tracks_manager.cc.o
+/usr/bin/ranlib libmap.a

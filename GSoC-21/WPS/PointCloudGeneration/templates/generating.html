@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>3D Point Cloud Generation</title>
+    </head>
+    <body>
+        <div class="container">
+            <h1 class="display-4">3D Point Cloud Generation</h1>
+            <p>Accepted file extensions are: <b>jpg, jpeg, png, bmp, tiff, tif</b></p>
+            <p><b>Note</b>: It might take a while to run 3D reconstruction on your images, so please be patient and only click upload once :)</p>
+            <form method="post" action="/" enctype="multipart/form-data">
+                <dl>
+                <p><input type="file" name="files[]" multiple="true" autocomplete="off" required></p>
+                </dl>
+                <p><input type="submit" value="Submit"></p>
+            </form>
+        </div>       
+    </body>
+</html>
