@@ -1,0 +1,148 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@200;300;400;500;600;700&display=swap');
+*{
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', sans-serif;
+}
+body{
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #dad3f8;
+}
+::selection{
+  background: #707070;
+  color: #fff;
+}
+.bodycontainer{
+  width: 100%;
+  height: 100%;
+  padding: 20px 20px  20px  20px;
+  background: #fff;
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
+.content{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  height: 100%;
+}
+.content .list{
+  display: flex;
+  flex-direction: column;
+  width: 15%;
+  margin-right: 70px;
+  position: relative;
+  height: 100%;
+}
+.content .list label{
+  height: 60px;
+  font-size: 22px;
+  font-weight: 500;
+  line-height: 60px;
+  cursor: pointer;
+  padding-left: 25px;
+  transition: all 0.5s ease;
+  color: #333;
+  z-index: 12;
+}
+#home:checked ~ .list label.home,
+#uploadImage:checked ~ .list label.uploadImage,
+#pointCloud:checked ~ .list label.pointCloud,
+#potree:checked ~ .list label.potree,
+#processing:checked ~ .list label.processing,
+#camera:checked ~ .list label.camera,
+#help:checked ~ .list label.help{
+  color: #fff;
+}
+.content .list label:hover{
+  color: #83c849;
+}
+.content .slider{
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 60px;
+  width: 100%;
+  border-radius: 12px;
+  background: #83c849;
+  transition: all 0.4s ease;
+}
+#home:checked ~ .list .slider{
+  top: 0;
+}
+#uploadImage:checked ~ .list .slider{
+  top: 60px;
+}
+#pointCloud:checked ~ .list .slider{
+  top: 140px;
+}
+#potree:checked ~ .list .slider{
+  top: 200px;
+}
+#processing:checked ~ .list .slider{
+  top: 270px;
+}
+#camera:checked ~ .list .slider{
+  top: 320px;
+}
+#help:checked ~ .list .slider{
+  top: 400px;
+}
+.content .text-content{
+  width: 80%;
+  height: 100%;
+}
+.content .text{
+  display: none;
+}
+.content .text .title{
+  font-size: 25px;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+.content .text p{
+  text-align: justify;
+}
+.content .text-content .home{
+  display: block;
+}
+#home:checked ~ .text-content .home,
+#uploadImage:checked ~ .text-content .uploadImage,
+#pointCloud:checked ~ .text-content .pointCloud,
+#potree:checked ~ .text-content .potree,
+#processing:checked ~ .text-content .processing,
+#camera:checked ~ .text-content .camera,
+#help:checked ~ .text-content .help{
+  display: block;
+}
+#uploadImage:checked ~ .text-content .home,
+#pointCloud:checked ~ .text-content .home,
+#potree:checked ~ .text-content .home,
+#processing:checked ~ .text-content .home,
+#camera:checked ~ .text-content .home,
+#help:checked ~ .text-content .home{
+  display: none;
+}
+.content input{
+  display: none;
+}
+.headBar {
+position: relative;
+    min-height: 60px;
+    padding-right: 15px;
+    padding-left: 15px;
+}
+h1.title {
+  color: #707070;
+  text-decoration: none;
+  /* font-size: 3.6em; */
+  margin: 0;
+  padding: 0;
+  text-transform: none;
+  min-width: 300px;
+  font-weight: normal;
+}
