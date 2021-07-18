@@ -56,7 +56,7 @@ def upload_file():
                 
                 # return render_template("result.html", image=recon_ply)
                         
-        return render_template("generating1.html")
+        return render_template("generating.html")
         
 
 @app.route('/data/sample/<path:filename>')
@@ -70,7 +70,7 @@ def result():
 
 @app.route('/potree')  
 def potree():  
-    return render_template("potree.html");  
+    return render_template("potree.html");
 
         
 

@@ -1,11 +1,21 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+        <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>3D Point Cloud Generation</title>
     </head>
     <body>
+        <div class="headBar">
+            <div class="title" style="clear: both">
+            <h1 style="float: left" ><a href= "https://www.ogc.org/standards/wps"><b>WPS</b></a></h1>
+            <h1 style="float: right" ><img src="{{url_for('static', filename='images/mapmint.jpg')}}" style="width:45px;height:45px;" alt=""><a href="http://mapmint.com/"><span style="color: #707070;"><b>Map</b></span><span style="color: #83c849"><b>Mint</b></span></a></h1>
+            </div>
+        </div>
+        <hr/>
+        <br/>
         <div class="container">
             <h1 class="display-4">3D Point Cloud Generation</h1>
             <p>Accepted file extensions are: <b>jpg, jpeg, png, bmp, tiff, tif</b></p>
@@ -14,8 +24,17 @@
                 <dl>
                 <p><input type="file" name="files[]" multiple="true" autocomplete="off" required></p>
                 </dl>
-                <p><input type="submit" value="Submit"></p>
+                <p><input type="submit" value="Submit" class="btn btn-info"></p>
             </form>
+            <div id="downloadPLYfile"  class="inline">
+                <a href="/data/sample/undistorted/depthmaps/merged.ply" download><button type="button" class="btn btn-info">Download Point Cloud</button></a>
+            </div>
+            <div id="visualize"  class="inline">
+                <a href=result><button type="button" id="visualize" class="btn btn-info">Visualize</button></a>
+            </div>       
+            <div id="openPotree"  class="inline">
+                <button type="button"  class="btn btn-info">Open Potree</button>
+            </div>
         </div>       
     </body>
 </html>
