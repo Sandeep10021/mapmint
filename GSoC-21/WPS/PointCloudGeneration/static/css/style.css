@@ -1,0 +1,19 @@
+.headBar {
+    position: relative;
+        min-height: 60px;
+        padding-right: 15px;
+        padding-left: 15px;
+    }
+h1.title {
+    color: #707070;
+    text-decoration: none;
+    /* font-size: 3.6em; */
+    margin: 0;
+    padding: 0;
+    text-transform: none;
+    min-width: 300px;
+    font-weight: normal;
+    }
+.inline {
+    display: inline-block; 
+    }
