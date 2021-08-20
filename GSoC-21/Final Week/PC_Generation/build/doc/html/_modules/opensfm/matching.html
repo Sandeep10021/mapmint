@@ -1,0 +1,986 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>opensfm.matching &mdash; OpenSfM 0.5.2 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="../../_static/graphviz.css" type="text/css" />
+
+  
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="../../_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="../../" src="../../_static/documentation_options.js"></script>
+        <script data-url_root="../../" id="documentation_options" src="../../_static/documentation_options.js"></script>
+        <script src="../../_static/jquery.js"></script>
+        <script src="../../_static/underscore.js"></script>
+        <script src="../../_static/doctools.js"></script>
+        <script src="../../_static/mathjax_conf.js"></script>
+    
+    <script type="text/javascript" src="../../_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="../../index.html" class="icon icon-home"> OpenSfM
+          
+
+          
+          </a>
+
+          
+            
+            
+              <div class="version">
+                0.5
+              </div>
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="../../building.html">Building</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../using.html">Using</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dataset.html">Dataset Structure</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../dataset.html#reconstruction-file-format">Reconstruction file format</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../geometry.html">Geometric Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../cam_coord_system.html">Camera Coordinate System and Conventions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reconstruction_module.html">Incremental reconstruction algorithm</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../large.html">Splitting a large dataset into smaller submodels</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../reporting.html">Reporting</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../quality_report.html">Statistics and Quality Report</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../rig.html">Rig Models</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../annotation_tool.html">Control points annotation tool</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Code Documentation</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">OpenSfM</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="../../index.html" class="icon icon-home"></a> &raquo;</li>
+        
+          <li><a href="../index.html">Module code</a> &raquo;</li>
+        
+      <li>opensfm.matching</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <h1>Source code for opensfm.matching</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">from</span> <span class="nn">timeit</span> <span class="kn">import</span> <span class="n">default_timer</span> <span class="k">as</span> <span class="n">timer</span>
+
+<span class="kn">import</span> <span class="nn">cv2</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">context</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">feature_loader</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">log</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">multiview</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">pairs_selection</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">pyfeatures</span>
+<span class="kn">from</span> <span class="nn">opensfm</span> <span class="kn">import</span> <span class="n">pygeometry</span>
+<span class="kn">from</span> <span class="nn">opensfm.dataset</span> <span class="kn">import</span> <span class="n">DataSetBase</span>
+
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="vm">__name__</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">clear_cache</span><span class="p">():</span>
+    <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">clear_cache</span><span class="p">()</span>
+
+
+<div class="viewcode-block" id="match_images"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_images">[docs]</a><span class="k">def</span> <span class="nf">match_images</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">,</span> <span class="n">config_override</span><span class="p">,</span> <span class="n">ref_images</span><span class="p">,</span> <span class="n">cand_images</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Perform pair matchings between two sets of images.</span>
+
+<span class="sd">    It will do matching for each pair (i, j), i being in</span>
+<span class="sd">    ref_images and j in cand_images, taking assumption that</span>
+<span class="sd">    matching(i, j) == matching(j ,i). This does not hold for</span>
+<span class="sd">    non-symmetric matching options like WORDS. Data will be</span>
+<span class="sd">    stored in i matching only.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Get EXIFs data</span>
+    <span class="n">all_images</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">ref_images</span> <span class="o">+</span> <span class="n">cand_images</span><span class="p">))</span>
+    <span class="n">exifs</span> <span class="o">=</span> <span class="p">{</span><span class="n">im</span><span class="p">:</span> <span class="n">data</span><span class="o">.</span><span class="n">load_exif</span><span class="p">(</span><span class="n">im</span><span class="p">)</span> <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="n">all_images</span><span class="p">}</span>
+
+    <span class="c1"># Generate pairs for matching</span>
+    <span class="n">pairs</span><span class="p">,</span> <span class="n">preport</span> <span class="o">=</span> <span class="n">pairs_selection</span><span class="o">.</span><span class="n">match_candidates_from_metadata</span><span class="p">(</span>
+        <span class="n">ref_images</span><span class="p">,</span>
+        <span class="n">cand_images</span><span class="p">,</span>
+        <span class="n">exifs</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">config_override</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Match them !</span>
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">match_images_with_pairs</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">,</span> <span class="n">exifs</span><span class="p">,</span> <span class="n">pairs</span><span class="p">),</span>
+        <span class="n">preport</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="match_images_with_pairs"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_images_with_pairs">[docs]</a><span class="k">def</span> <span class="nf">match_images_with_pairs</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">,</span> <span class="n">config_override</span><span class="p">,</span> <span class="n">exifs</span><span class="p">,</span> <span class="n">pairs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Perform pair matchings given pairs. &quot;&quot;&quot;</span>
+    <span class="n">cameras</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_camera_models</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">match_arguments</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">,</span> <span class="n">cameras</span><span class="p">,</span> <span class="n">exifs</span><span class="p">))</span>
+
+    <span class="c1"># Perform all pair matchings in parallel</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Matching </span><span class="si">{}</span><span class="s2"> image pairs&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)))</span>
+    <span class="n">mem_per_process</span> <span class="o">=</span> <span class="mi">512</span>
+    <span class="n">jobs_per_process</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">processes</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">processes_that_fit_in_memory</span><span class="p">(</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;processes&quot;</span><span class="p">],</span> <span class="n">mem_per_process</span>
+    <span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Computing pair matching with </span><span class="si">%d</span><span class="s2"> processes&quot;</span> <span class="o">%</span> <span class="n">processes</span><span class="p">)</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">context</span><span class="o">.</span><span class="n">parallel_map</span><span class="p">(</span><span class="n">match_unwrap_args</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">processes</span><span class="p">,</span> <span class="n">jobs_per_process</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="s2">&quot;Matched </span><span class="si">{}</span><span class="s2"> pairs </span><span class="si">{}</span><span class="s2"> in </span><span class="si">{}</span><span class="s2"> seconds (</span><span class="si">{}</span><span class="s2"> seconds/pair).&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">),</span>
+            <span class="n">log_projection_types</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">exifs</span><span class="p">,</span> <span class="n">cameras</span><span class="p">),</span>
+            <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">start</span><span class="p">)</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">pairs</span><span class="p">)</span> <span class="k">if</span> <span class="n">pairs</span> <span class="k">else</span> <span class="mi">0</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Index results per pair</span>
+    <span class="n">resulting_pairs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="n">resulting_pairs</span><span class="p">[</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+    <span class="k">return</span> <span class="n">resulting_pairs</span></div>
+
+
+<span class="k">def</span> <span class="nf">log_projection_types</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">exifs</span><span class="p">,</span> <span class="n">cameras</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s2">&quot;&quot;</span>
+
+    <span class="n">projection_type_pairs</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="n">pt1</span> <span class="o">=</span> <span class="n">cameras</span><span class="p">[</span><span class="n">exifs</span><span class="p">[</span><span class="n">im1</span><span class="p">][</span><span class="s2">&quot;camera&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">projection_type</span>
+        <span class="n">pt2</span> <span class="o">=</span> <span class="n">cameras</span><span class="p">[</span><span class="n">exifs</span><span class="p">[</span><span class="n">im2</span><span class="p">][</span><span class="s2">&quot;camera&quot;</span><span class="p">]]</span><span class="o">.</span><span class="n">projection_type</span>
+
+        <span class="k">if</span> <span class="n">pt1</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">projection_type_pairs</span><span class="p">:</span>
+            <span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="n">pt2</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">]:</span>
+            <span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">][</span><span class="n">pt2</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">][</span><span class="n">pt2</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">))</span>
+
+    <span class="n">output</span> <span class="o">=</span> <span class="s2">&quot;(&quot;</span>
+    <span class="k">for</span> <span class="n">pt1</span> <span class="ow">in</span> <span class="n">projection_type_pairs</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">pt2</span> <span class="ow">in</span> <span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">]:</span>
+            <span class="n">output</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="si">{}</span><span class="s2">-</span><span class="si">{}</span><span class="s2">: </span><span class="si">{}</span><span class="s2">, &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">pt1</span><span class="p">,</span> <span class="n">pt2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">projection_type_pairs</span><span class="p">[</span><span class="n">pt1</span><span class="p">][</span><span class="n">pt2</span><span class="p">])</span>
+            <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">output</span><span class="p">[:</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;)&quot;</span>
+
+
+<div class="viewcode-block" id="save_matches"><a class="viewcode-back" href="../../api.html#opensfm.matching.save_matches">[docs]</a><span class="k">def</span> <span class="nf">save_matches</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">,</span> <span class="n">images_ref</span><span class="p">,</span> <span class="n">matched_pairs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given pairwise matches (image 1, image 2) - &gt; matches,</span>
+<span class="sd">    save them such as only {image E images_ref} will store the matches.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">images_ref_set</span> <span class="o">=</span> <span class="nb">set</span><span class="p">(</span><span class="n">images_ref</span><span class="p">)</span>
+    <span class="n">matches_per_im1</span> <span class="o">=</span> <span class="p">{</span><span class="n">im</span><span class="p">:</span> <span class="p">{}</span> <span class="k">for</span> <span class="n">im</span> <span class="ow">in</span> <span class="n">images_ref</span><span class="p">}</span>
+    <span class="k">for</span> <span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">),</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matched_pairs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">im1</span> <span class="ow">in</span> <span class="n">images_ref_set</span><span class="p">:</span>
+            <span class="n">matches_per_im1</span><span class="p">[</span><span class="n">im1</span><span class="p">][</span><span class="n">im2</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="k">elif</span> <span class="n">im2</span> <span class="ow">in</span> <span class="n">images_ref_set</span><span class="p">:</span>
+            <span class="n">matches_per_im1</span><span class="p">[</span><span class="n">im2</span><span class="p">][</span><span class="n">im1</span><span class="p">]</span> <span class="o">=</span> <span class="n">m</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span>
+                <span class="s2">&quot;Couldn&#39;t save matches for </span><span class="si">{}</span><span class="s2">. No image found in images_ref.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">)</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im1_matches</span> <span class="ow">in</span> <span class="n">matches_per_im1</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">save_matches</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im1_matches</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="match_arguments"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_arguments">[docs]</a><span class="k">def</span> <span class="nf">match_arguments</span><span class="p">(</span><span class="n">pairs</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">,</span> <span class="n">config_override</span><span class="p">,</span> <span class="n">cameras</span><span class="p">,</span> <span class="n">exifs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Generate arguments for parralel processing of pair matching &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span> <span class="ow">in</span> <span class="n">pairs</span><span class="p">:</span>
+        <span class="k">yield</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">cameras</span><span class="p">,</span> <span class="n">exifs</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span></div>
+
+
+<div class="viewcode-block" id="match_unwrap_args"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_unwrap_args">[docs]</a><span class="k">def</span> <span class="nf">match_unwrap_args</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Wrapper for parallel processing of pair matching.</span>
+
+<span class="sd">    Compute all pair matchings of a given image and save them.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">log</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
+    <span class="n">im1</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">im2</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="n">cameras</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">exifs</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span>
+    <span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">4</span><span class="p">]</span>
+    <span class="n">config_override</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">5</span><span class="p">]</span>
+    <span class="n">camera1</span> <span class="o">=</span> <span class="n">cameras</span><span class="p">[</span><span class="n">exifs</span><span class="p">[</span><span class="n">im1</span><span class="p">][</span><span class="s2">&quot;camera&quot;</span><span class="p">]]</span>
+    <span class="n">camera2</span> <span class="o">=</span> <span class="n">cameras</span><span class="p">[</span><span class="n">exifs</span><span class="p">[</span><span class="n">im2</span><span class="p">][</span><span class="s2">&quot;camera&quot;</span><span class="p">]]</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">match</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">matches</span></div>
+
+
+<div class="viewcode-block" id="match_descriptors"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_descriptors">[docs]</a><span class="k">def</span> <span class="nf">match_descriptors</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Perform descriptor matching for a pair of images.&quot;&quot;&quot;</span>
+    <span class="c1"># Override parameters</span>
+    <span class="n">overriden_config</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">overriden_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config_override</span><span class="p">)</span>
+
+    <span class="c1"># Run descriptor matching</span>
+    <span class="n">time_start</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">matches</span> <span class="o">=</span> <span class="n">_match_descriptors_impl</span><span class="p">(</span>
+        <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">overriden_config</span>
+    <span class="p">)</span>
+    <span class="n">time_2d_matching</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_start</span>
+
+    <span class="c1"># From indexes in filtered sets, to indexes in original sets of features</span>
+    <span class="n">m1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">)</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">m2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">matches_unfiltered</span> <span class="o">=</span> <span class="n">unfilter_matches</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+
+    <span class="n">matcher_type</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;matcher_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">symmetric</span> <span class="o">=</span> <span class="s2">&quot;symmetric&quot;</span> <span class="k">if</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;symmetric_matching&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;one-way&quot;</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Matching </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">.  Matcher: </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">) &quot;</span>
+        <span class="s2">&quot;T-desc: </span><span class="si">{:1.3f}</span><span class="s2"> Matches: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">im1</span><span class="p">,</span>
+            <span class="n">im2</span><span class="p">,</span>
+            <span class="n">matcher_type</span><span class="p">,</span>
+            <span class="n">symmetric</span><span class="p">,</span>
+            <span class="n">time_2d_matching</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">matches_unfiltered</span><span class="p">),</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matches_unfiltered</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_match_descriptors_impl</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">overriden_config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Perform descriptor matching for a pair of images. It also apply static objects removal.&quot;&quot;&quot;</span>
+    <span class="c1"># Will apply mask to features if any</span>
+    <span class="n">features_data1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_all_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">features_data2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_all_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">features_data1</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_data1</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
+        <span class="ow">or</span> <span class="n">features_data2</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_data2</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+    <span class="n">matcher_type</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;matcher_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">symmetric_matching</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;symmetric_matching&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">matcher_type</span> <span class="o">==</span> <span class="s2">&quot;WORDS&quot;</span><span class="p">:</span>
+        <span class="n">words1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_words</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">words2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_words</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">words1</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">words2</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[],</span> <span class="p">[],</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="n">symmetric_matching</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_words_symmetric</span><span class="p">(</span>
+                <span class="n">features_data1</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">words1</span><span class="p">,</span>
+                <span class="n">features_data2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">words2</span><span class="p">,</span>
+                <span class="n">overriden_config</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_words</span><span class="p">(</span>
+                <span class="n">features_data1</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">words1</span><span class="p">,</span>
+                <span class="n">features_data2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">words2</span><span class="p">,</span>
+                <span class="n">overriden_config</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">elif</span> <span class="n">matcher_type</span> <span class="o">==</span> <span class="s2">&quot;FLANN&quot;</span><span class="p">:</span>
+        <span class="n">feat_data_index1</span><span class="p">,</span> <span class="n">index1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_features_index</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">symmetric_matching</span><span class="p">:</span>
+            <span class="n">feat_data_index2</span><span class="p">,</span> <span class="n">index2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_features_index</span><span class="p">(</span>
+                <span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_flann_symmetric</span><span class="p">(</span>
+                <span class="n">feat_data_index1</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">index1</span><span class="p">,</span>
+                <span class="n">feat_data_index2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span>
+                <span class="n">index2</span><span class="p">,</span>
+                <span class="n">overriden_config</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_flann</span><span class="p">(</span><span class="n">index1</span><span class="p">,</span> <span class="n">features_data2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span> <span class="n">overriden_config</span><span class="p">)</span>
+    <span class="k">elif</span> <span class="n">matcher_type</span> <span class="o">==</span> <span class="s2">&quot;BRUTEFORCE&quot;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">symmetric_matching</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_brute_force_symmetric</span><span class="p">(</span>
+                <span class="n">features_data1</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span> <span class="n">features_data2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span> <span class="n">overriden_config</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="n">match_brute_force</span><span class="p">(</span>
+                <span class="n">features_data1</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span> <span class="n">features_data2</span><span class="o">.</span><span class="n">descriptors</span><span class="p">,</span> <span class="n">overriden_config</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid matcher_type: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">matcher_type</span><span class="p">))</span>
+
+    <span class="c1"># Adhoc filters</span>
+    <span class="k">if</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;matching_use_filters&quot;</span><span class="p">]:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="n">apply_adhoc_filters</span><span class="p">(</span>
+            <span class="n">data</span><span class="p">,</span>
+            <span class="n">matches</span><span class="p">,</span>
+            <span class="n">im1</span><span class="p">,</span>
+            <span class="n">camera1</span><span class="p">,</span>
+            <span class="n">features_data1</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+            <span class="n">im2</span><span class="p">,</span>
+            <span class="n">camera2</span><span class="p">,</span>
+            <span class="n">features_data2</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">return</span> <span class="n">features_data1</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">features_data2</span><span class="o">.</span><span class="n">points</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="match_robust"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_robust">[docs]</a><span class="k">def</span> <span class="nf">match_robust</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Perform robust geometry matching on a set of matched descriptors indexes. &quot;&quot;&quot;</span>
+    <span class="c1"># Override parameters</span>
+    <span class="n">overriden_config</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">overriden_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config_override</span><span class="p">)</span>
+
+    <span class="c1"># Will apply mask to features if any</span>
+    <span class="n">features_data1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_all_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">features_data2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_all_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">masked</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">features_data1</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_data1</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
+        <span class="ow">or</span> <span class="n">features_data2</span> <span class="ow">is</span> <span class="kc">None</span>
+        <span class="ow">or</span> <span class="nb">len</span><span class="p">(</span><span class="n">features_data2</span><span class="o">.</span><span class="n">points</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">2</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="c1"># Run robust matching</span>
+    <span class="n">np_matches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">rmatches</span> <span class="o">=</span> <span class="n">_match_robust_impl</span><span class="p">(</span>
+        <span class="n">im1</span><span class="p">,</span>
+        <span class="n">im2</span><span class="p">,</span>
+        <span class="n">features_data1</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+        <span class="n">features_data2</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+        <span class="n">np_matches</span><span class="p">,</span>
+        <span class="n">camera1</span><span class="p">,</span>
+        <span class="n">camera2</span><span class="p">,</span>
+        <span class="n">data</span><span class="p">,</span>
+        <span class="n">overriden_config</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">time_robust_matching</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+
+    <span class="c1"># From indexes in filtered sets, to indexes in original sets of features</span>
+    <span class="n">m1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">)</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">m2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmatches_unfiltered</span> <span class="o">=</span> <span class="n">unfilter_matches</span><span class="p">(</span><span class="n">rmatches</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+
+    <span class="n">robust_matching_min_match</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;robust_matching_min_match&quot;</span><span class="p">]</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Matching </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">. T-robust: </span><span class="si">{:1.3f}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;Matches: </span><span class="si">{}</span><span class="s2"> Robust: </span><span class="si">{}</span><span class="s2"> Success: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">im1</span><span class="p">,</span>
+            <span class="n">im2</span><span class="p">,</span>
+            <span class="n">time_robust_matching</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">rmatches_unfiltered</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">rmatches_unfiltered</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">robust_matching_min_match</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rmatches_unfiltered</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">robust_matching_min_match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rmatches_unfiltered</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_match_robust_impl</span><span class="p">(</span>
+    <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">overriden_config</span>
+<span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot; Perform robust geometry matching on a set of matched descriptors indexes. &quot;&quot;&quot;</span>
+    <span class="c1"># robust matching</span>
+    <span class="n">rmatches</span> <span class="o">=</span> <span class="n">robust_match</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">overriden_config</span><span class="p">)</span>
+    <span class="n">rmatches</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">]</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">rmatches</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">rmatches</span>
+
+
+<div class="viewcode-block" id="match"><a class="viewcode-back" href="../../api.html#opensfm.matching.match">[docs]</a><span class="k">def</span> <span class="nf">match</span><span class="p">(</span><span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">config_override</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Perform full matching (descriptor+robust) for a pair of images.&quot;&quot;&quot;</span>
+    <span class="c1"># Override parameters</span>
+    <span class="n">overriden_config</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">overriden_config</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">config_override</span><span class="p">)</span>
+
+    <span class="c1"># Run descriptor matching</span>
+    <span class="n">time_start</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span> <span class="o">=</span> <span class="n">_match_descriptors_impl</span><span class="p">(</span>
+        <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">overriden_config</span>
+    <span class="p">)</span>
+    <span class="n">time_2d_matching</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_start</span>
+
+    <span class="n">matcher_type</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;matcher_type&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">upper</span><span class="p">()</span>
+    <span class="n">symmetric</span> <span class="o">=</span> <span class="s2">&quot;symmetric&quot;</span> <span class="k">if</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;symmetric_matching&quot;</span><span class="p">]</span> <span class="k">else</span> <span class="s2">&quot;one-way&quot;</span>
+    <span class="n">robust_matching_min_match</span> <span class="o">=</span> <span class="n">overriden_config</span><span class="p">[</span><span class="s2">&quot;robust_matching_min_match&quot;</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">robust_matching_min_match</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+            <span class="s2">&quot;Matching </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">.  Matcher: </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">) T-desc: </span><span class="si">{:1.3f}</span><span class="s2"> &quot;</span>
+            <span class="s2">&quot;Matches: FAILED&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">matcher_type</span><span class="p">,</span> <span class="n">symmetric</span><span class="p">,</span> <span class="n">time_2d_matching</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+        <span class="k">return</span> <span class="p">[]</span>
+
+    <span class="c1"># Run robust matching</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span>
+    <span class="n">rmatches</span> <span class="o">=</span> <span class="n">_match_robust_impl</span><span class="p">(</span>
+        <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">overriden_config</span>
+    <span class="p">)</span>
+    <span class="n">time_robust_matching</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">t</span>
+
+    <span class="c1"># From indexes in filtered sets, to indexes in original sets of features</span>
+    <span class="n">m1</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im1</span><span class="p">)</span>
+    <span class="n">m2</span> <span class="o">=</span> <span class="n">feature_loader</span><span class="o">.</span><span class="n">instance</span><span class="o">.</span><span class="n">load_mask</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">im2</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">m1</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">m2</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rmatches</span> <span class="o">=</span> <span class="n">unfilter_matches</span><span class="p">(</span><span class="n">rmatches</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">)</span>
+
+    <span class="n">time_total</span> <span class="o">=</span> <span class="n">timer</span><span class="p">()</span> <span class="o">-</span> <span class="n">time_start</span>
+
+    <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
+        <span class="s2">&quot;Matching </span><span class="si">{}</span><span class="s2"> and </span><span class="si">{}</span><span class="s2">.  Matcher: </span><span class="si">{}</span><span class="s2"> (</span><span class="si">{}</span><span class="s2">) &quot;</span>
+        <span class="s2">&quot;T-desc: </span><span class="si">{:1.3f}</span><span class="s2"> T-robust: </span><span class="si">{:1.3f}</span><span class="s2"> T-total: </span><span class="si">{:1.3f}</span><span class="s2"> &quot;</span>
+        <span class="s2">&quot;Matches: </span><span class="si">{}</span><span class="s2"> Robust: </span><span class="si">{}</span><span class="s2"> Success: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">im1</span><span class="p">,</span>
+            <span class="n">im2</span><span class="p">,</span>
+            <span class="n">matcher_type</span><span class="p">,</span>
+            <span class="n">symmetric</span><span class="p">,</span>
+            <span class="n">time_2d_matching</span><span class="p">,</span>
+            <span class="n">time_robust_matching</span><span class="p">,</span>
+            <span class="n">time_total</span><span class="p">,</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">rmatches</span><span class="p">),</span>
+            <span class="nb">len</span><span class="p">(</span><span class="n">rmatches</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="n">robust_matching_min_match</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">rmatches</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">robust_matching_min_match</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">[]</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">rmatches</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="match_words"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_words">[docs]</a><span class="k">def</span> <span class="nf">match_words</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">words1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">words2</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Match using words and apply Lowe&#39;s ratio filter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f1: feature descriptors of the first image</span>
+<span class="sd">        w1: the nth closest words for each feature in the first image</span>
+<span class="sd">        f2: feature descriptors of the second image</span>
+<span class="sd">        w2: the nth closest words for each feature in the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;lowes_ratio&quot;</span><span class="p">]</span>
+    <span class="n">num_checks</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;bow_num_checks&quot;</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">pyfeatures</span><span class="o">.</span><span class="n">match_using_words</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">words1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">words2</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">ratio</span><span class="p">,</span> <span class="n">num_checks</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="match_words_symmetric"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_words_symmetric">[docs]</a><span class="k">def</span> <span class="nf">match_words_symmetric</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">words1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">words2</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Match using words in both directions and keep consistent matches.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f1: feature descriptors of the first image</span>
+<span class="sd">        w1: the nth closest words for each feature in the first image</span>
+<span class="sd">        f2: feature descriptors of the second image</span>
+<span class="sd">        w2: the nth closest words for each feature in the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches_ij</span> <span class="o">=</span> <span class="n">match_words</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">words1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">words2</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="n">matches_ji</span> <span class="o">=</span> <span class="n">match_words</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span> <span class="n">words2</span><span class="p">,</span> <span class="n">f1</span><span class="p">,</span> <span class="n">words1</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="n">matches_ij</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">matches_ij</span><span class="p">]</span>
+    <span class="n">matches_ji</span> <span class="o">=</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">matches_ji</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ij</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ji</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="match_flann"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_flann">[docs]</a><span class="k">def</span> <span class="nf">match_flann</span><span class="p">(</span><span class="n">index</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Match using FLANN and apply Lowe&#39;s ratio filter.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        index: flann index if the first image</span>
+<span class="sd">        f2: feature descriptors of the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">search_params</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">checks</span><span class="o">=</span><span class="n">config</span><span class="p">[</span><span class="s2">&quot;flann_checks&quot;</span><span class="p">])</span>
+    <span class="n">results</span><span class="p">,</span> <span class="n">dists</span> <span class="o">=</span> <span class="n">index</span><span class="o">.</span><span class="n">knnSearch</span><span class="p">(</span><span class="n">f2</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="n">params</span><span class="o">=</span><span class="n">search_params</span><span class="p">)</span>
+    <span class="n">squared_ratio</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;lowes_ratio&quot;</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span>  <span class="c1"># Flann returns squared L2 distances</span>
+    <span class="n">good</span> <span class="o">=</span> <span class="n">dists</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">squared_ratio</span> <span class="o">*</span> <span class="n">dists</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">results</span><span class="p">[</span><span class="n">good</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">good</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span></div>
+
+
+<div class="viewcode-block" id="match_flann_symmetric"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_flann_symmetric">[docs]</a><span class="k">def</span> <span class="nf">match_flann_symmetric</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">indexi</span><span class="p">,</span> <span class="n">fj</span><span class="p">,</span> <span class="n">indexj</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Match using FLANN in both directions and keep consistent matches.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fi: feature descriptors of the first image</span>
+<span class="sd">        indexi: flann index if the first image</span>
+<span class="sd">        fj: feature descriptors of the second image</span>
+<span class="sd">        indexj: flann index of the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches_ij</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">match_flann</span><span class="p">(</span><span class="n">indexi</span><span class="p">,</span> <span class="n">fj</span><span class="p">,</span> <span class="n">config</span><span class="p">)]</span>
+    <span class="n">matches_ji</span> <span class="o">=</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">match_flann</span><span class="p">(</span><span class="n">indexj</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">config</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ij</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ji</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="match_brute_force"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_brute_force">[docs]</a><span class="k">def</span> <span class="nf">match_brute_force</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Brute force matching and Lowe&#39;s ratio filtering.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        f1: feature descriptors of the first image</span>
+<span class="sd">        f2: feature descriptors of the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="n">f1</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">f2</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span>
+    <span class="k">if</span> <span class="n">f1</span><span class="o">.</span><span class="n">dtype</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">np</span><span class="o">.</span><span class="n">uint8</span><span class="p">:</span>
+        <span class="n">matcher_type</span> <span class="o">=</span> <span class="s2">&quot;BruteForce-Hamming&quot;</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">matcher_type</span> <span class="o">=</span> <span class="s2">&quot;BruteForce&quot;</span>
+    <span class="n">matcher</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">DescriptorMatcher_create</span><span class="p">(</span><span class="n">matcher_type</span><span class="p">)</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">matcher</span><span class="o">.</span><span class="n">knnMatch</span><span class="p">(</span><span class="n">f1</span><span class="p">,</span> <span class="n">f2</span><span class="p">,</span> <span class="n">k</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="n">ratio</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;lowes_ratio&quot;</span><span class="p">]</span>
+    <span class="n">good_matches</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">match</span> <span class="ow">and</span> <span class="nb">len</span><span class="p">(</span><span class="n">match</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">m</span><span class="p">,</span> <span class="n">n</span> <span class="o">=</span> <span class="n">match</span>
+            <span class="k">if</span> <span class="n">m</span><span class="o">.</span><span class="n">distance</span> <span class="o">&lt;</span> <span class="n">ratio</span> <span class="o">*</span> <span class="n">n</span><span class="o">.</span><span class="n">distance</span><span class="p">:</span>
+                <span class="n">good_matches</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_convert_matches_to_vector</span><span class="p">(</span><span class="n">good_matches</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_convert_matches_to_vector</span><span class="p">(</span><span class="n">matches</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Convert Dmatch object to matrix form.&quot;&quot;&quot;</span>
+    <span class="n">matches_vector</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">int</span><span class="p">)</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">mm</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="n">matches_vector</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">queryIdx</span>
+        <span class="n">matches_vector</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">mm</span><span class="o">.</span><span class="n">trainIdx</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">k</span> <span class="o">+</span> <span class="mi">1</span>
+    <span class="k">return</span> <span class="n">matches_vector</span>
+
+
+<div class="viewcode-block" id="match_brute_force_symmetric"><a class="viewcode-back" href="../../api.html#opensfm.matching.match_brute_force_symmetric">[docs]</a><span class="k">def</span> <span class="nf">match_brute_force_symmetric</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">fj</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Match with brute force in both directions and keep consistent matches.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        fi: feature descriptors of the first image</span>
+<span class="sd">        fj: feature descriptors of the second image</span>
+<span class="sd">        config: config parameters</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches_ij</span> <span class="o">=</span> <span class="p">[(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">match_brute_force</span><span class="p">(</span><span class="n">fi</span><span class="p">,</span> <span class="n">fj</span><span class="p">,</span> <span class="n">config</span><span class="p">)]</span>
+    <span class="n">matches_ji</span> <span class="o">=</span> <span class="p">[(</span><span class="n">b</span><span class="p">,</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span><span class="p">,</span> <span class="n">b</span> <span class="ow">in</span> <span class="n">match_brute_force</span><span class="p">(</span><span class="n">fj</span><span class="p">,</span> <span class="n">fi</span><span class="p">,</span> <span class="n">config</span><span class="p">)]</span>
+
+    <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ij</span><span class="p">)</span><span class="o">.</span><span class="n">intersection</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">matches_ji</span><span class="p">)))</span></div>
+
+
+<div class="viewcode-block" id="robust_match_fundamental"><a class="viewcode-back" href="../../api.html#opensfm.matching.robust_match_fundamental">[docs]</a><span class="k">def</span> <span class="nf">robust_match_fundamental</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter matches by estimating the Fundamental matrix via RANSAC.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">[</span><span class="n">matches</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">[</span><span class="n">matches</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="n">FM_RANSAC</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">FM_RANSAC</span> <span class="k">if</span> <span class="n">context</span><span class="o">.</span><span class="n">OPENCV3</span> <span class="k">else</span> <span class="n">cv2</span><span class="o">.</span><span class="n">cv</span><span class="o">.</span><span class="n">CV_FM_RANSAC</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;robust_matching_threshold&quot;</span><span class="p">]</span>
+    <span class="n">F</span><span class="p">,</span> <span class="n">mask</span> <span class="o">=</span> <span class="n">cv2</span><span class="o">.</span><span class="n">findFundamentalMat</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">FM_RANSAC</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="mf">0.9999</span><span class="p">)</span>
+    <span class="n">inliers</span> <span class="o">=</span> <span class="n">mask</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span><span class="o">.</span><span class="n">nonzero</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">F</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">F</span><span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">==</span> <span class="mf">0.0</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">F</span><span class="p">,</span> <span class="p">[]</span>
+
+    <span class="k">return</span> <span class="n">F</span><span class="p">,</span> <span class="n">matches</span><span class="p">[</span><span class="n">inliers</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="compute_inliers_bearings"><a class="viewcode-back" href="../../api.html#opensfm.matching.compute_inliers_bearings">[docs]</a><span class="k">def</span> <span class="nf">compute_inliers_bearings</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Compute points that can be triangulated.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        b1, b2: Bearings in the two images.</span>
+<span class="sd">        R, t: Rotation and translation from the second image to the first.</span>
+<span class="sd">              That is the convention and the opposite of many</span>
+<span class="sd">              functions in this module.</span>
+<span class="sd">        threshold: max reprojection error in radians.</span>
+<span class="sd">    Returns:</span>
+<span class="sd">        array: Aray of boolean indicating inliers/outliers</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">pygeometry</span><span class="o">.</span><span class="n">triangulate_two_bearings_midpoint_many</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">R</span><span class="p">,</span> <span class="n">t</span><span class="p">)</span>
+
+    <span class="n">good_idx</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]]</span>
+    <span class="n">points</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p</span><span class="p">))</span> <span class="k">if</span> <span class="n">p</span><span class="p">[</span><span class="n">i</span><span class="p">][</span><span class="mi">0</span><span class="p">]])</span>
+
+    <span class="n">br1</span> <span class="o">=</span> <span class="n">points</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">br1</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">br1</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+    <span class="n">br2</span> <span class="o">=</span> <span class="n">R</span><span class="o">.</span><span class="n">T</span><span class="o">.</span><span class="n">dot</span><span class="p">((</span><span class="n">points</span> <span class="o">-</span> <span class="n">t</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">br2</span> <span class="o">/=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">br2</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="n">np</span><span class="o">.</span><span class="n">newaxis</span><span class="p">]</span>
+
+    <span class="n">ok1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">br1</span> <span class="o">-</span> <span class="n">b1</span><span class="p">[</span><span class="n">good_idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+    <span class="n">ok2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">br2</span> <span class="o">-</span> <span class="n">b2</span><span class="p">[</span><span class="n">good_idx</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">threshold</span>
+    <span class="n">is_ok</span> <span class="o">=</span> <span class="n">ok1</span> <span class="o">*</span> <span class="n">ok2</span>
+
+    <span class="n">inliers</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">b1</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">ok</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">is_ok</span><span class="p">):</span>
+        <span class="n">inliers</span><span class="p">[</span><span class="n">good_idx</span><span class="p">[</span><span class="n">i</span><span class="p">]]</span> <span class="o">=</span> <span class="n">ok</span>
+    <span class="k">return</span> <span class="n">inliers</span></div>
+
+
+<div class="viewcode-block" id="robust_match_calibrated"><a class="viewcode-back" href="../../api.html#opensfm.matching.robust_match_calibrated">[docs]</a><span class="k">def</span> <span class="nf">robust_match_calibrated</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter matches by estimating the Essential matrix via RANSAC.&quot;&quot;&quot;</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+    <span class="n">p1</span> <span class="o">=</span> <span class="n">p1</span><span class="p">[</span><span class="n">matches</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">p2</span> <span class="o">=</span> <span class="n">p2</span><span class="p">[</span><span class="n">matches</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]][:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+    <span class="n">b1</span> <span class="o">=</span> <span class="n">camera1</span><span class="o">.</span><span class="n">pixel_bearing_many</span><span class="p">(</span><span class="n">p1</span><span class="p">)</span>
+    <span class="n">b2</span> <span class="o">=</span> <span class="n">camera2</span><span class="o">.</span><span class="n">pixel_bearing_many</span><span class="p">(</span><span class="n">p2</span><span class="p">)</span>
+
+    <span class="n">threshold</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;robust_matching_calib_threshold&quot;</span><span class="p">]</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">multiview</span><span class="o">.</span><span class="n">relative_pose_ransac</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">threshold</span><span class="p">,</span> <span class="mi">1000</span><span class="p">,</span> <span class="mf">0.999</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">relax</span> <span class="ow">in</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="mi">1</span><span class="p">]:</span>
+        <span class="n">inliers</span> <span class="o">=</span> <span class="n">compute_inliers_bearings</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">T</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">relax</span> <span class="o">*</span> <span class="n">threshold</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">inliers</span><span class="p">)</span> <span class="o">&lt;</span> <span class="mi">8</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">iterations</span> <span class="o">=</span> <span class="n">config</span><span class="p">[</span><span class="s2">&quot;five_point_refine_match_iterations&quot;</span><span class="p">]</span>
+        <span class="n">T</span> <span class="o">=</span> <span class="n">multiview</span><span class="o">.</span><span class="n">relative_pose_optimize_nonlinear</span><span class="p">(</span>
+            <span class="n">b1</span><span class="p">[</span><span class="n">inliers</span><span class="p">],</span> <span class="n">b2</span><span class="p">[</span><span class="n">inliers</span><span class="p">],</span> <span class="n">T</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">T</span><span class="p">[:</span><span class="mi">3</span><span class="p">,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">iterations</span>
+        <span class="p">)</span>
+
+    <span class="n">inliers</span> <span class="o">=</span> <span class="n">compute_inliers_bearings</span><span class="p">(</span><span class="n">b1</span><span class="p">,</span> <span class="n">b2</span><span class="p">,</span> <span class="n">T</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">3</span><span class="p">],</span> <span class="n">T</span><span class="p">[:,</span> <span class="mi">3</span><span class="p">],</span> <span class="n">threshold</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">matches</span><span class="p">[</span><span class="n">inliers</span><span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="robust_match"><a class="viewcode-back" href="../../api.html#opensfm.matching.robust_match">[docs]</a><span class="k">def</span> <span class="nf">robust_match</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter matches by fitting a geometric model.</span>
+
+<span class="sd">    If cameras are perspective without distortion, then the Fundamental</span>
+<span class="sd">    matrix is used.  Otherwise, we use the Essential matrix.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="n">camera1</span><span class="o">.</span><span class="n">projection_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;perspective&quot;</span><span class="p">,</span> <span class="s2">&quot;brown&quot;</span><span class="p">]</span>
+        <span class="ow">and</span> <span class="n">camera1</span><span class="o">.</span><span class="n">k1</span> <span class="o">==</span> <span class="mf">0.0</span>
+        <span class="ow">and</span> <span class="n">camera1</span><span class="o">.</span><span class="n">k2</span> <span class="o">==</span> <span class="mf">0.0</span>
+        <span class="ow">and</span> <span class="n">camera2</span><span class="o">.</span><span class="n">projection_type</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;perspective&quot;</span><span class="p">,</span> <span class="s2">&quot;brown&quot;</span><span class="p">]</span>
+        <span class="ow">and</span> <span class="n">camera2</span><span class="o">.</span><span class="n">k1</span> <span class="o">==</span> <span class="mf">0.0</span>
+        <span class="ow">and</span> <span class="n">camera2</span><span class="o">.</span><span class="n">k2</span> <span class="o">==</span> <span class="mf">0.0</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">robust_match_fundamental</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">config</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">robust_match_calibrated</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="unfilter_matches"><a class="viewcode-back" href="../../api.html#opensfm.matching.unfilter_matches">[docs]</a><span class="k">def</span> <span class="nf">unfilter_matches</span><span class="p">(</span><span class="n">matches</span><span class="p">,</span> <span class="n">m1</span><span class="p">,</span> <span class="n">m2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Given matches and masking arrays, get matches with un-masked indexes.&quot;&quot;&quot;</span>
+    <span class="n">i1</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">m1</span><span class="p">)</span>
+    <span class="n">i2</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flatnonzero</span><span class="p">(</span><span class="n">m2</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([(</span><span class="n">i1</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span> <span class="n">i2</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]])</span> <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="apply_adhoc_filters"><a class="viewcode-back" href="../../api.html#opensfm.matching.apply_adhoc_filters">[docs]</a><span class="k">def</span> <span class="nf">apply_adhoc_filters</span><span class="p">(</span><span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">p1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">camera2</span><span class="p">,</span> <span class="n">p2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Apply a set of filters functions defined further below</span>
+<span class="sd">    for removing static data in images.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">_non_static_matches</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">)</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">_not_on_pano_poles_matches</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">)</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">_not_on_vermont_watermark</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="n">matches</span> <span class="o">=</span> <span class="n">_not_on_blackvue_watermark</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">matches</span></div>
+
+
+<span class="k">def</span> <span class="nf">_non_static_matches</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove matches with same position in both images.</span>
+
+<span class="sd">    That should remove matches on that are likely belong to rig occluders,</span>
+<span class="sd">    watermarks or dust, but not discard entirely static images.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">threshold</span> <span class="o">=</span> <span class="mf">0.001</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="n">p1</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]]</span> <span class="o">-</span> <span class="n">p2</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">if</span> <span class="n">d</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">+</span> <span class="n">d</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">&gt;=</span> <span class="n">threshold</span> <span class="o">**</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+
+    <span class="n">static_ratio_threshold</span> <span class="o">=</span> <span class="mf">0.85</span>
+    <span class="n">static_ratio_removed</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">res</span><span class="p">)</span> <span class="o">/</span> <span class="nb">max</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">matches</span><span class="p">),</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">static_ratio_removed</span> <span class="o">&gt;</span> <span class="n">static_ratio_threshold</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">matches</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">res</span>
+
+
+<span class="k">def</span> <span class="nf">_not_on_pano_poles_matches</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">camera1</span><span class="p">,</span> <span class="n">camera2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Remove matches for features that are too high or to low on a pano.</span>
+
+<span class="sd">    That should remove matches on the sky and and carhood part of panoramas</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">min_lat</span> <span class="o">=</span> <span class="o">-</span><span class="mf">0.125</span>
+    <span class="n">max_lat</span> <span class="o">=</span> <span class="mf">0.125</span>
+    <span class="n">is_pano1</span> <span class="o">=</span> <span class="n">pygeometry</span><span class="o">.</span><span class="n">Camera</span><span class="o">.</span><span class="n">is_panorama</span><span class="p">(</span><span class="n">camera1</span><span class="o">.</span><span class="n">projection_type</span><span class="p">)</span>
+    <span class="n">is_pano2</span> <span class="o">=</span> <span class="n">pygeometry</span><span class="o">.</span><span class="n">Camera</span><span class="o">.</span><span class="n">is_panorama</span><span class="p">(</span><span class="n">camera2</span><span class="o">.</span><span class="n">projection_type</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">is_pano1</span> <span class="ow">or</span> <span class="n">is_pano2</span><span class="p">:</span>
+        <span class="n">res</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">match</span> <span class="ow">in</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="k">if</span> <span class="p">(</span><span class="ow">not</span> <span class="n">is_pano1</span> <span class="ow">or</span> <span class="n">min_lat</span> <span class="o">&lt;</span> <span class="n">p1</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">0</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_lat</span><span class="p">)</span> <span class="ow">and</span> <span class="p">(</span>
+                <span class="ow">not</span> <span class="n">is_pano2</span> <span class="ow">or</span> <span class="n">min_lat</span> <span class="o">&lt;</span> <span class="n">p2</span><span class="p">[</span><span class="n">match</span><span class="p">[</span><span class="mi">1</span><span class="p">]][</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">max_lat</span>
+            <span class="p">):</span>
+                <span class="n">res</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">match</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">res</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">matches</span>
+
+
+<span class="k">def</span> <span class="nf">_not_on_vermont_watermark</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter Vermont images watermark.&quot;&quot;&quot;</span>
+    <span class="n">meta1</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_exif</span><span class="p">(</span><span class="n">im1</span><span class="p">)</span>
+    <span class="n">meta2</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_exif</span><span class="p">(</span><span class="n">im2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">meta1</span><span class="p">[</span><span class="s2">&quot;make&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;VTrans_Camera&quot;</span> <span class="ow">and</span> <span class="n">meta1</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;VTrans_Camera&quot;</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span> <span class="k">if</span> <span class="n">_vermont_valid_mask</span><span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]])]</span>
+    <span class="k">if</span> <span class="n">meta2</span><span class="p">[</span><span class="s2">&quot;make&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;VTrans_Camera&quot;</span> <span class="ow">and</span> <span class="n">meta2</span><span class="p">[</span><span class="s2">&quot;model&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="s2">&quot;VTrans_Camera&quot;</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span> <span class="k">if</span> <span class="n">_vermont_valid_mask</span><span class="p">(</span><span class="n">p2</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]])]</span>
+    <span class="k">return</span> <span class="n">matches</span>
+
+
+<span class="k">def</span> <span class="nf">_vermont_valid_mask</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if pixel inside the valid region.</span>
+
+<span class="sd">    Pixel coord Y should be larger than 50.</span>
+<span class="sd">    In normalized coordinates y &gt; (50 - h / 2) / w</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&gt;</span> <span class="o">-</span><span class="mf">0.255</span>
+
+
+<span class="k">def</span> <span class="nf">_not_on_blackvue_watermark</span><span class="p">(</span><span class="n">p1</span><span class="p">,</span> <span class="n">p2</span><span class="p">,</span> <span class="n">matches</span><span class="p">,</span> <span class="n">im1</span><span class="p">,</span> <span class="n">im2</span><span class="p">,</span> <span class="n">data</span><span class="p">:</span> <span class="n">DataSetBase</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Filter Blackvue&#39;s watermark.&quot;&quot;&quot;</span>
+    <span class="n">meta1</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_exif</span><span class="p">(</span><span class="n">im1</span><span class="p">)</span>
+    <span class="n">meta2</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">load_exif</span><span class="p">(</span><span class="n">im2</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">meta1</span><span class="p">[</span><span class="s2">&quot;make&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;blackvue&quot;</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span> <span class="k">if</span> <span class="n">_blackvue_valid_mask</span><span class="p">(</span><span class="n">p1</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">0</span><span class="p">]])]</span>
+    <span class="k">if</span> <span class="n">meta2</span><span class="p">[</span><span class="s2">&quot;make&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;blackvue&quot;</span><span class="p">:</span>
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[</span><span class="n">m</span> <span class="k">for</span> <span class="n">m</span> <span class="ow">in</span> <span class="n">matches</span> <span class="k">if</span> <span class="n">_blackvue_valid_mask</span><span class="p">(</span><span class="n">p2</span><span class="p">[</span><span class="n">m</span><span class="p">[</span><span class="mi">1</span><span class="p">]])]</span>
+    <span class="k">return</span> <span class="n">matches</span>
+
+
+<span class="k">def</span> <span class="nf">_blackvue_valid_mask</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Check if pixel inside the valid region.</span>
+
+<span class="sd">    Pixel coord Y should be smaller than h - 70.</span>
+<span class="sd">    In normalized coordinates y &lt; (h - 70 - h / 2) / w,</span>
+<span class="sd">    with h = 2160 and w = 3840</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">&lt;</span> <span class="mf">0.263</span>
+</pre></div>
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, Mapillary.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+  
+ 
+<style>
+  @import url('https://fonts.googleapis.com/css?family=Source+Sans+Pro:400,600,700&display=swap');
+  html {
+    font-family: 'Source Sans Pro', sans-serif;
+  }
+  .highlight {
+    font-family: "Lucida Console", Monaco, monospace!important;
+  }
+  .wy-side-nav-search {
+    background: #212b36;
+  }
+  .wy-side-nav-search input[type=text] {
+    border-color: transparent;
+    
+  }
+  .wy-nav-side {
+    background: #212b36;
+  }
+  .wy-menu-vertical a:hover {
+    color: #d9d9d9;
+    background: rgba(255, 255, 255, 0.1);
+  }
+  a, a:hover {
+    color: #05cb63;
+  }
+  body {
+    color: #212b36;
+  }
+  .wy-nav-content-wrap {
+    background: #fcfcfc!important;
+  }
+  .wy-side-nav-search>a:hover {
+    color: #fff!important;
+  }
+  .highlight {
+    background: #dee5ed;
+  }
+  .wy-menu-vertical li.on a, .wy-menu-vertical li.current>a {
+
+  }
+  .wy-menu-vertical li.toctree-l1.current>a {
+    border-top: 0;
+    border-bottom: 0;
+  }
+  .rst-content pre.literal-block, .rst-content div[class^='highlight'] {
+    border-radius: 4px;
+    border-color: #dee5ed!important;  
+  }
+</style>
+
+
+</body>
+</html>

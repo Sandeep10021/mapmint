@@ -1,0 +1,2 @@
+/usr/bin/ar qc librobust.a  CMakeFiles/robust.dir/src/absolute_pose_model.cc.o CMakeFiles/robust.dir/src/absolute_pose_known_rotation_model.cc.o CMakeFiles/robust.dir/src/relative_rotation_model.cc.o CMakeFiles/robust.dir/src/relative_pose_model.cc.o CMakeFiles/robust.dir/src/line_model.cc.o CMakeFiles/robust.dir/src/instanciations.cc.o
+/usr/bin/ranlib librobust.a
