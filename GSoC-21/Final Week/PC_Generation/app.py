@@ -10,6 +10,8 @@ UPLOAD_FOLDER = "data/sample"
 ALLOWED_EXT = {'png', 'jpg', 'jpeg', 'bmp', 'tiff', 'tif' }
 
 app = Flask(__name__)
+app.secret_key='dont tell anyone'
+
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 import mimetypes
@@ -26,7 +28,7 @@ def upload_file():
                 # check if the post request has the file part
                 if 'files[]' not in request.files:
                         return 'Error: No file is chosen... Please upload a valid file. '
-
+		
                 files = request.files.getlist('files[]')
                 outputID = ID
                 outputDir = os.path.join(app.config['UPLOAD_FOLDER'], outputID)
@@ -49,7 +51,9 @@ def upload_file():
                                 
                 os.system("ls {}".format(outputDir)) 
                 command =  'bin/opensfm_run_all data/sample'
-                subprocess.call([command], shell=True)   
+                subprocess.call([command], shell=True) 
+
+                flash('Point Cloud has been generated sucessfully!')
 
                 # recon_ply = "/undistorted/depthmaps/merged.ply"
                 
@@ -66,13 +70,6 @@ def uploaded_file(filename):
 def result(): 
     recon_ply = "/undistorted/depthmaps/merged.ply"
     return render_template("result.html", image=recon_ply);  
-
-@app.route('/potree')  
-def potree():  
-    return render_template("potree.html");
-
-        
-
 
 
 
