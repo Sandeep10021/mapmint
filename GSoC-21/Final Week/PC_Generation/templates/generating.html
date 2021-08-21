@@ -26,15 +26,21 @@
                 </dl>
                 <p><input type="submit" value="Submit" class="btn btn-info"></p>
             </form>
+	  <div >
+    		{% with messages = get_flashed_messages() %}
+			{% if messages %}
+				{% for message in messages %}
+					<h4 style="color:green"> {{ message }}</h4>
+				{% endfor %}
+			{% endif %}
+		{% endwith %}
+ 	 </div>
             <div id="downloadPLYfile"  class="inline">
                 <a href="/data/sample/undistorted/depthmaps/merged.ply" download><button type="button" class="btn btn-info">Download Point Cloud</button></a>
             </div>
             <div id="visualize"  class="inline">
                 <a href=result><button type="button" id="visualize" class="btn btn-info">Visualize</button></a>
             </div>       
-            <div id="openPotree"  class="inline">
-                <button type="button"  class="btn btn-info">Open Potree</button>
-            </div>
         </div>       
     </body>
 </html>
