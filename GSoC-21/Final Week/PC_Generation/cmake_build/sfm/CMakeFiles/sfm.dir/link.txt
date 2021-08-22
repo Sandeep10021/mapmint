@@ -1,2 +1,0 @@
-/usr/bin/ar qc libsfm.a  CMakeFiles/sfm.dir/src/retriangulation.cc.o CMakeFiles/sfm.dir/src/ba_helpers.cc.o CMakeFiles/sfm.dir/src/tracks_helpers.cc.o
-/usr/bin/ranlib libsfm.a
