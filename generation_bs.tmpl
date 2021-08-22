@@ -1,0 +1,52 @@
+#encoding UTF-8
+#import zoo
+#encoding UTF-8
+#from Skeleton_bs import Skeleton_bs
+#extends Skeleton_bs 
+
+
+#def page_title
+MapMint: "Generate"
+#end def
+
+#def body
+
+<!DOCTYPE html>
+<html>
+    <head>
+	<link rel="stylesheet" type="text/css" href="$conf["main"]["publicationUrl"]/PointCloud/static/css/style.css"/>
+        <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>3D Point Cloud Generation</title>
+    </head>
+    <body>
+        <div class="headBar">
+            <div class="title" style="clear: both">
+            <h1 style="float: left" ><a href= "https://www.ogc.org/standards/wps"><b>WPS</b></a></h1>
+            <h1 style="float: right" ><img src="http://mapmint.com/assets/images/mapmint-logo.png" style="width:45px;height:45px;" alt=""><a href="http://mapmint.com/"><span style="color: #707070;"><b>Map</b></span><span style="color: #83c849"><b>Mint</b></span></a></h1>
+            </div>
+        </div>
+        <hr/>
+        <br/>
+        <div class="container">
+            <h1 class="display-4">3D Point Cloud Generation</h1>
+            <p>Accepted file extensions are: <b>jpg, jpeg, png, bmp, tiff, tif</b></p>
+            <p><b>Note</b>: It might take a while to run 3D reconstruction on your images, so please be patient and only click upload once :)</p>
+            <form method="post" action="/cgi-bin/upload.py" enctype="multipart/form-data">
+                <dl>
+                <p><input type="file" name="files[]" multiple="true" autocomplete="off" required></p>
+                </dl>
+                <p><input type="submit"  value="Submit" class="btn btn-info"></p>
+            </form>
+            <div id="downloadPLYfile"  class="inline">
+                <a href="$conf["main"]["publicationUrl"]/PointCloud/data/sample/undistorted/depthmaps/merged.ply" download><button type="button" class="btn btn-info">Download Point Cloud</button></a>
+            </div>
+            <div id="visualize"  class="inline">
+                <a href=result_display><button type="button" id="visualize" class="btn btn-info">Visualize</button></a>
+            </div>       
+        </div>      
+    </body>
+</html>
+
+#end def

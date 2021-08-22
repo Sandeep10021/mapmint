@@ -1,0 +1,261 @@
+{
+    "num_candidate_image_pairs": 12,
+    "reconstructions": [
+        {
+            "bootstrap": {
+                "image_pair": [
+                    "DSC_0494.JPG",
+                    "DSC_0499.JPG"
+                ],
+                "common_tracks": 2124,
+                "two_view_reconstruction": {
+                    "5_point_inliers": 2119,
+                    "plane_based_inliers": 2119,
+                    "method": "plane_based"
+                },
+                "triangulated_points": 2122,
+                "decision": "Success",
+                "memory_usage": 184823808
+            },
+            "grow": {
+                "steps": [
+                    {
+                        "images": [
+                            "DSC_0495.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 1952,
+                            "num_inliers": 1949,
+                            "shots": [
+                                "DSC_0495.JPG"
+                            ]
+                        },
+                        "memory_usage": 188764160,
+                        "triangulated_points": 1501,
+                        "bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 9.954394e+01, Final cost: 9.033644e+01, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.076115,
+                                "run": 20.263315,
+                                "teardown": 0.015401
+                            }
+                        },
+                        "retriangulation": {
+                            "num_points_before": 3622,
+                            "num_points_after": 3621,
+                            "wall_time": 5.107812819999708
+                        },
+                        "bundle_after_retriangulation": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 9.477501e+01, Final cost: 9.171122e+01, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.037134,
+                                "run": 18.033215,
+                                "teardown": 0.066267
+                            }
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0496.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 2886,
+                            "num_inliers": 2873,
+                            "shots": [
+                                "DSC_0496.JPG"
+                            ]
+                        },
+                        "memory_usage": 195825664,
+                        "triangulated_points": 710,
+                        "local_bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 11, Initial cost: 1.538488e+02, Final cost: 1.276881e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.150916,
+                                "run": 2.932954,
+                                "teardown": 0.041158
+                            },
+                            "num_interior_images": 4,
+                            "num_boundary_images": 0,
+                            "num_other_images": 0
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0497.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 3053,
+                            "num_inliers": 3037,
+                            "shots": [
+                                "DSC_0497.JPG"
+                            ]
+                        },
+                        "memory_usage": 200994816,
+                        "triangulated_points": 575,
+                        "bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 2.282922e+02, Final cost: 2.015166e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.183131,
+                                "run": 39.564507,
+                                "teardown": 0.048663
+                            }
+                        },
+                        "retriangulation": {
+                            "num_points_before": 4905,
+                            "num_points_after": 4898,
+                            "wall_time": 8.507856254000217
+                        },
+                        "bundle_after_retriangulation": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 2.496756e+02, Final cost: 2.384281e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.217818,
+                                "run": 41.390911,
+                                "teardown": 0.046837
+                            }
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0498.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 3186,
+                            "num_inliers": 3177,
+                            "shots": [
+                                "DSC_0498.JPG"
+                            ]
+                        },
+                        "memory_usage": 207192064,
+                        "triangulated_points": 522,
+                        "local_bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 8, Initial cost: 2.574400e+02, Final cost: 2.200640e+02, Termination: CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.465531,
+                                "run": 3.938292,
+                                "teardown": 0.101847
+                            },
+                            "num_interior_images": 6,
+                            "num_boundary_images": 0,
+                            "num_other_images": 0
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0500.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 2098,
+                            "num_inliers": 2084,
+                            "shots": [
+                                "DSC_0500.JPG"
+                            ]
+                        },
+                        "memory_usage": 210436096,
+                        "triangulated_points": 215,
+                        "local_bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 10, Initial cost: 2.941169e+02, Final cost: 2.641501e+02, Termination: CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.434708,
+                                "run": 6.952343,
+                                "teardown": 0.105724
+                            },
+                            "num_interior_images": 7,
+                            "num_boundary_images": 0,
+                            "num_other_images": 0
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0502.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 1896,
+                            "num_inliers": 1868,
+                            "shots": [
+                                "DSC_0502.JPG"
+                            ]
+                        },
+                        "memory_usage": 213700608,
+                        "triangulated_points": 207,
+                        "local_bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 11, Initial cost: 3.831422e+02, Final cost: 3.258829e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.272832,
+                                "run": 7.519278,
+                                "teardown": 0.107505
+                            },
+                            "num_interior_images": 8,
+                            "num_boundary_images": 0,
+                            "num_other_images": 0
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0503.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 1763,
+                            "num_inliers": 1741,
+                            "shots": [
+                                "DSC_0503.JPG"
+                            ]
+                        },
+                        "memory_usage": 215470080,
+                        "triangulated_points": 511,
+                        "bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 4.596686e+02, Final cost: 4.175885e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.196429,
+                                "run": 90.855567,
+                                "teardown": 0.111997
+                            }
+                        },
+                        "retriangulation": {
+                            "num_points_before": 6352,
+                            "num_points_after": 6341,
+                            "wall_time": 6.2006991129997004
+                        },
+                        "bundle_after_retriangulation": {
+                            "brief_report": "Ceres Solver Report: Iterations: 101, Initial cost: 5.676912e+02, Final cost: 5.409232e+02, Termination: NO_CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.165545,
+                                "run": 38.084861,
+                                "teardown": 0.070298
+                            }
+                        }
+                    },
+                    {
+                        "images": [
+                            "DSC_0501.JPG"
+                        ],
+                        "resection": {
+                            "num_common_points": 1509,
+                            "num_inliers": 1493,
+                            "shots": [
+                                "DSC_0501.JPG"
+                            ]
+                        },
+                        "memory_usage": 221118464,
+                        "triangulated_points": 317,
+                        "local_bundle": {
+                            "brief_report": "Ceres Solver Report: Iterations: 7, Initial cost: 4.484930e+02, Final cost: 4.151832e+02, Termination: CONVERGENCE",
+                            "wall_times": {
+                                "setup": 0.149485,
+                                "run": 2.848857,
+                                "teardown": 0.147648
+                            },
+                            "num_interior_images": 10,
+                            "num_boundary_images": 0,
+                            "num_other_images": 0
+                        }
+                    }
+                ]
+            }
+        }
+    ],
+    "wall_times": {
+        "compute_image_pairs": 6.884817468000165,
+        "compute_reconstructions": 389.61387703499986
+    },
+    "not_reconstructed_images": []
+}

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libfoundation.a  CMakeFiles/foundation.dir/src/types.cc.o CMakeFiles/foundation.dir/src/newton_raphson.cc.o CMakeFiles/foundation.dir/src/numeric.cc.o
+/usr/bin/ranlib libfoundation.a
